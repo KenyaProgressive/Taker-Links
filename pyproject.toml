@@ -1,0 +1,21 @@
+[project]
+name = "taker-links"
+version = "0.1.0"
+description = ""
+authors = [{ name = "Niktia Parfenov", email = "n.a.parfenov@edu.mtuci.ru" }]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+fastapi = "^0.116.1"
+uvicorn = "^0.35.0"
+aiosqlite = "^0.21.0"
+
+[tool.poetry.group.extras.dependencies]
+black = "^25.1.0"
+mypy = "^1.17.0"
