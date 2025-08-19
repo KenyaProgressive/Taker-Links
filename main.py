@@ -1,11 +1,14 @@
 import uvicorn
 import asyncio
-from src.hasher import Hasher
 from src.app import tlinks
 from logger import logger
+from src.db.query import create_db_and_table
 
 async def main():
-    uvicorn.run(tlinks, host='localhost', port=8888)
+    await create_db_and_table()
+    conf = uvicorn.Config(tlinks, host='localhost', port=8888, loop="asyncio")
+    server = uvicorn.Server(conf)
+    await server.serve()
     logger.complete()
 
 

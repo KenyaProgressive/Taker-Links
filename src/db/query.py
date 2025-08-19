@@ -3,18 +3,17 @@ from logger import logger
 
 DATABASE_NAME="links-data"
 
-async def make_connection():
-    try:
-        return await aiosqlite.connect(DATABASE_NAME)
-    except ConnectionError:
-       logger.error("Connection was failed")
-    except Exception as e:
-        logger.critical(e)
 
-async def get_cursor(conn: aiosqlite.Connection) -> aiosqlite.Cursor:
+async def create_db_and_table() -> None:
+    async with aiosqlite.connect(DATABASE_NAME) as conn:
+        await create_table(conn)
+        await conn.commit()
+
+
+async def get_cursor(conn) -> aiosqlite.Cursor:
     return await conn.cursor()
 
-async def create_table(conn: aiosqlite.Connection) -> None:
+async def create_table(conn) -> None:
     cursor = await get_cursor(conn)
     await cursor.execute(
         """CREATE TABLE IF NOT EXISTS tlink(id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,6 +30,7 @@ async def save_data(conn: aiosqlite.Connection) -> bool:
             """INSERT INTO tlink(id, real_link, hash, hash_link) VALUES(?, ?, ?, ?)""",
         )
         logger.info("'\033[94m'LINK GENERATE SUCESSFULLY --- DATA WAS SAVED'\033[0m'")
+        await conn.commit()
         return True
     except aiosqlite.DatabaseError as e:
         logger.error(e)
