@@ -25,3 +25,4 @@ flet = "^0.28.3"
 [tool.poetry.group.extras.dependencies]
 black = "^25.1.0"
 mypy = "^1.17.0"
+isort = "^6.0.1"
