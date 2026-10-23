@@ -10,17 +10,18 @@ from src.validate import is_ip_address_valid, is_url_valid
 from contextlib import asynccontextmanager
 from logger import logger
 from http import HTTPStatus
+from const import SERVER_LINK
 
 @asynccontextmanager
-async def startup_and_shutdown(tlinks: FastAPI):
+async def lifespan(tlinks: FastAPI):
     tlinks.state.db_conn = await aiosqlite.connect(DATABASE_NAME)
     await create_db_and_table(tlinks.state.db_conn)
     yield
     await tlinks.state.db_conn.close()
 
 
-tlinks = FastAPI(title="Taker-Links", lifespan=startup_and_shutdown)
-SERVER_LINK = "http://localhost:8888"
+tlinks = FastAPI(title="Taker-Links", lifespan=lifespan)
+
 
 @tlinks.get("/")
 async def home():

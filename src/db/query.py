@@ -2,30 +2,34 @@ import aiosqlite
 import datetime
 from logger import logger
 from src.hasher import hasher
-
-DATABASE_NAME="links-data"
-HASH_RETENTION_TIME = 604800 # 7 days
+from const import DATABASE_NAME, HASH_RETENTION_TIME
 
 
-async def create_db_and_table(conn: aiosqlite.Connection) -> None:
-    try:
-        await create_table(conn)
-        await conn.commit()
-    except Exception as e:
-        logger.error(e)
+class LinksData:
 
-async def get_cursor(conn) -> aiosqlite.Cursor:
-    return await conn.cursor()
+    def __init__(self, conn: aiosqlite.Connection) -> None:
+        self._conn = conn
 
-async def create_table(conn) -> None:
-    cursor = await get_cursor(conn)
-    await cursor.execute(
-        """CREATE TABLE IF NOT EXISTS tlink(id INTEGER PRIMARY KEY AUTOINCREMENT,
-        real_link TEXT NOT NULL,
-        hash TEXT NOT NULL)"""
-    )
-    await conn.commit()
-    await cursor.close()
+    async def create_db_and_table(self) -> None:
+        try:
+            await self.create_table(self._conn)
+            await self._conn.commit()
+        except Exception as e:
+            logger.error(e)
+            raise
+
+    async def get_cursor(self) -> aiosqlite.Cursor:
+        return await self._conn.cursor()
+
+    async def create_table(self) -> None:
+        cursor = await self.get_cursor(self._conn)
+        await cursor.execute(
+            """CREATE TABLE IF NOT EXISTS tlink(id INTEGER PRIMARY KEY AUTOINCREMENT,
+            real_link TEXT NOT NULL,
+            hash TEXT NOT NULL)"""
+        )
+        await self._conn.commit()
+        await cursor.close()
 
 async def save_data(conn: aiosqlite.Connection, real_link: str, new_hash: str) -> bool:
     cursor = await get_cursor(conn)

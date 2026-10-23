@@ -1,28 +1,14 @@
 [project]
 name = "taker-links"
 version = "0.1.0"
-description = ""
-authors = [{ name = "Niktia Parfenov", email = "n.a.parfenov@edu.mtuci.ru" }]
+description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12,<4.0"
+requires-python = ">=3.13"
 dependencies = [
-    "dotenv (>=0.9.9,<0.10.0)",
-    "loguru (>=0.7.3,<0.8.0)",
+    "aiosqlite>=0.22.1",
+    "fastapi>=0.162.0",
+    "flet>=1.0.5",
+    "loguru>=0.7.3",
+    "sqlalchemy>=2.1.6",
+    "uvicorn>=0.54.0",
 ]
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.group.dev.dependencies]
-fastapi = "^0.116.1"
-uvicorn = "^0.35.0"
-aiosqlite = "^0.21.0"
-asyncio = "^3.4.3"
-aiohttp = {extras = ["speedups"], version = "^3.12.14"}
-flet = "^0.28.3"
-
-[tool.poetry.group.extras.dependencies]
-black = "^25.1.0"
-mypy = "^1.17.0"
-isort = "^6.0.1"
