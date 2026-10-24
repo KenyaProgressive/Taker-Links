@@ -1,6 +1,8 @@
-from db.base import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.types import Text, String
+from sqlalchemy.types import String, Text
+
+from db.base import Base
+
 
 class LinksData(Base):
     __tablename__ = "links_data"

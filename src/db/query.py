@@ -1,8 +1,10 @@
-import aiosqlite
 import datetime
+
+import aiosqlite
 from logger import logger
-from src.hasher import hasher
+
 from const import DATABASE_NAME, HASH_RETENTION_TIME
+from src.hasher import hasher
 
 
 class LinksData:
@@ -31,12 +33,13 @@ class LinksData:
         await self._conn.commit()
         await cursor.close()
 
+
 async def save_data(conn: aiosqlite.Connection, real_link: str, new_hash: str) -> bool:
     cursor = await get_cursor(conn)
     try:
         await cursor.execute(
-            """INSERT INTO tlink(real_link, hash) VALUES(?, ?)""",
-            (real_link, new_hash))
+            """INSERT INTO tlink(real_link, hash) VALUES(?, ?)""", (real_link, new_hash)
+        )
         logger.info("'\033[94m'LINK GENERATE SUCESSFULLY --- DATA WAS SAVED'\033[0m'")
         await conn.commit()
         return True
@@ -46,10 +49,13 @@ async def save_data(conn: aiosqlite.Connection, real_link: str, new_hash: str) -
     finally:
         await cursor.close()
 
+
 async def get_real_link(conn: aiosqlite.Connection, hash_token: str):
     cursor = await get_cursor(conn)
     try:
-        result = await cursor.execute("""SELECT real_link FROM tlink WHERE hash = ?""", (hash_token, ))
+        result = await cursor.execute(
+            """SELECT real_link FROM tlink WHERE hash = ?""", (hash_token,)
+        )
         return await result.fetchone()
     except aiosqlite.DatabaseError as e:
         logger.error(e)
@@ -57,11 +63,14 @@ async def get_real_link(conn: aiosqlite.Connection, hash_token: str):
         await cursor.close()
     logger.info("REAL LINK WAS RETURNED SUCCESSFULLY")
 
+
 async def check_time_existion(conn: aiosqlite.Connection, hash_token: str):
     cursor = await get_cursor(conn)
     now_time = datetime.datetime.now().timestamp()
     try:
-        result = await cursor.execute("""SELECT created_at FROM tlink WHERE hash = ?""", (hash_token,))
+        result = await cursor.execute(
+            """SELECT created_at FROM tlink WHERE hash = ?""", (hash_token,)
+        )
         value = await result.fetchone()
         if now_time - value < 604800:
             return True

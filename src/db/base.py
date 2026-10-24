@@ -1,8 +1,11 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.types import UUID as SA_UUID, TIMESTAMP
-from uuid import UUID, uuid4
 from datetime import datetime
+from uuid import UUID, uuid4
+
 from sqlalchemy import func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.types import TIMESTAMP
+from sqlalchemy.types import UUID as SA_UUID
+
 
 class Base(DeclarativeBase):
 
@@ -13,4 +16,3 @@ class Base(DeclarativeBase):
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), server_default=func.now(), init=False
     )
-

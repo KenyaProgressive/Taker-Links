@@ -1,50 +1,68 @@
-import aiosqlite
-
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse, RedirectResponse
-from src.db.query import check_time_existion, get_real_link, save_data, create_db_and_table, DATABASE_NAME
-from src.validate import is_ip_address_valid, is_url_valid
+import sys
 from contextlib import asynccontextmanager
-from logger import logger
 from http import HTTPStatus
-from const import SERVER_LINK
+
+import uvicorn
+from fastapi import FastAPI, Response
+from fastapi.responses import JSONResponse, RedirectResponse
+from loguru import logger
+
+from const import HOST, LOG_FORMAT, PORT
 from db.session import _engine
+from dependencies import LinksDataServiceDep
+from dto.links_data import LinksDataDTO
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.remove()
+
+    logger.add(
+        sys.stderr,
+        format=LOG_FORMAT,
+        backtrace=True,
+        diagnose=False,
+    )
+
     yield
+
     await _engine.dispose()
+    await logger.complete()
 
 
-app: FastAPI = FastAPI(title="taker-links", lifespan=lifespan, description="Сокращатель ссылок в экосистеме Taker")
+app: FastAPI = FastAPI(
+    title="taker-links",
+    lifespan=lifespan,
+    description="Сокращатель ссылок в экосистеме Taker",
+)
 
 
 @app.get("/")
 async def home():
     return "Weclome to Taker-Links!"
 
-@app.get("/convert")
-async def convert_link(real_link: str):
-    res = await get_real_link(tlinks.state.db_conn, real_link)
-    if res != None:
-        return JSONResponse(content={"SHORT_LINK": res}, status_code=HTTPStatus.OK)
-    else:
-        if is_ip_address_valid(real_link) or is_url_valid(real_link):
-            try:
-                new_hash_token = hasher()
-                hash_link = SERVER_LINK + "/" + new_hash_token
-                await save_data(tlinks.state.db_conn, real_link, new_hash_token)
-                return JSONResponse(content={"SHORT_LINK": hash_link}, status_code=HTTPStatus.CREATED)
-            except Exception as e:
-                logger.error(e)
-                return JSONResponse(content={"error": e}, status_code=HTTPStatus.BAD_REQUEST)
+
+@app.get("/make_short")
+async def make_short_link(service: LinksDataServiceDep, links_data: LinksDataDTO):
+    try:
+        res = await service.make_short_link(links_data)
+        return JSONResponse(content={"short": res}, status_code=HTTPStatus.OK)
+    except Exception as e:
+        logger.exception(f"Error occurred: {e}")
+        return Response(
+            content="Произошла ошибка. Попробуйте ещё раз.",
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
 
 @app.get("/{hash_token}")
-async def make_redirect(hash_token: str):
-    real_link = await get_real_link(tlinks.state.db_conn, hash_token)  # (link, )
-    if real_link:
-        return RedirectResponse(real_link[0])
+async def make_redirect(service: LinksDataServiceDep, _hash: str):
+    real_link = await service.get_real_link_by_hash(_hash)
+    if real_link is not None:
+        return RedirectResponse(real_link)
     else:
-        return JSONResponse(content={"error": "Not Found"}, status_code=HTTPStatus.NOT_FOUND)
+        return Response(content="Ресурс не найден", status_code=HTTPStatus.NOT_FOUND)
 
 
+if __name__ == "__main__":
+    uvicorn.run("main:app", host=HOST, port=PORT, reload=True)

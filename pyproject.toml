@@ -12,3 +12,10 @@ dependencies = [
     "sqlalchemy>=2.1.6",
     "uvicorn>=0.54.0",
 ]
+
+[dependency-groups]
+dev = [
+    "bandit>=1.9.4",
+    "black>=26.10.1",
+    "isort>=9.0.2",
+]
