@@ -1,33 +1,29 @@
 import aiosqlite
 
-from fastapi import (
-    FastAPI,
-)
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse, RedirectResponse
-from src.hasher import hasher
 from src.db.query import check_time_existion, get_real_link, save_data, create_db_and_table, DATABASE_NAME
 from src.validate import is_ip_address_valid, is_url_valid
 from contextlib import asynccontextmanager
 from logger import logger
 from http import HTTPStatus
 from const import SERVER_LINK
+from db.session import _engine
 
 @asynccontextmanager
-async def lifespan(tlinks: FastAPI):
-    tlinks.state.db_conn = await aiosqlite.connect(DATABASE_NAME)
-    await create_db_and_table(tlinks.state.db_conn)
+async def lifespan(app: FastAPI):
     yield
-    await tlinks.state.db_conn.close()
+    await _engine.dispose()
 
 
-tlinks = FastAPI(title="Taker-Links", lifespan=lifespan)
+app: FastAPI = FastAPI(title="taker-links", lifespan=lifespan, description="Сокращатель ссылок в экосистеме Taker")
 
 
-@tlinks.get("/")
+@app.get("/")
 async def home():
     return "Weclome to Taker-Links!"
 
-@tlinks.get("/convert")
+@app.get("/convert")
 async def convert_link(real_link: str):
     res = await get_real_link(tlinks.state.db_conn, real_link)
     if res != None:
@@ -43,10 +39,12 @@ async def convert_link(real_link: str):
                 logger.error(e)
                 return JSONResponse(content={"error": e}, status_code=HTTPStatus.BAD_REQUEST)
 
-@tlinks.get("/{hash_token}")
+@app.get("/{hash_token}")
 async def make_redirect(hash_token: str):
     real_link = await get_real_link(tlinks.state.db_conn, hash_token)  # (link, )
     if real_link:
         return RedirectResponse(real_link[0])
     else:
         return JSONResponse(content={"error": "Not Found"}, status_code=HTTPStatus.NOT_FOUND)
+
+

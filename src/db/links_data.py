@@ -6,4 +6,4 @@ class LinksData(Base):
     __tablename__ = "links_data"
 
     real_link: Mapped[str] = mapped_column(Text, nullable=False)
-    hash: Mapped[str] = mapped_column(String(6), nullable=False)
+    hash: Mapped[str] = mapped_column(String(6), nullable=False, unique=True)
