@@ -1,0 +1,30 @@
+services:
+  api:
+    build: .
+    command: python main.py
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8888
+      PUBLIC_URL: http://localhost:8888/
+      DATABASE_URL: sqlite+aiosqlite:////data/app.db
+    ports:
+      - "8888:8888"
+    volumes:
+      - links-data:/data
+    restart: unless-stopped
+
+  ui:
+    build: .
+    command: python UI/app.py
+    environment:
+      API_URL: http://api:8888
+      UI_WEB: "1"
+      UI_PORT: 8550
+    ports:
+      - "8550:8550"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  links-data:

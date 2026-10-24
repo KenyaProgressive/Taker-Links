@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
 
 from const import HOST, LOG_FORMAT, PORT
+from db.base import Base
 from db.session import _engine
 from dependencies import LinksDataServiceDep
 from dto.links_data import LinksDataDTO
@@ -15,6 +16,10 @@ from dto.links_data import LinksDataDTO
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
+    async with _engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     logger.remove()
 
     logger.add(
@@ -42,7 +47,7 @@ async def home():
     return "Weclome to Taker-Links!"
 
 
-@app.get("/make_short")
+@app.post("/make_short", status_code=HTTPStatus.OK)
 async def make_short_link(service: LinksDataServiceDep, links_data: LinksDataDTO):
     try:
         res = await service.make_short_link(links_data)
@@ -55,9 +60,10 @@ async def make_short_link(service: LinksDataServiceDep, links_data: LinksDataDTO
         )
 
 
-@app.get("/{hash_token}")
+@app.get("/{_hash}", response_class=RedirectResponse, include_in_schema=False)
 async def make_redirect(service: LinksDataServiceDep, _hash: str):
     real_link = await service.get_real_link_by_hash(_hash)
+    logger.debug(f"link: {real_link}")
     if real_link is not None:
         return RedirectResponse(real_link)
     else:

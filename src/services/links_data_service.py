@@ -29,6 +29,7 @@ class LinksDataService:
             await self._repo.save_data(
                 real_link=links_data.get_str_link(), new_hash=_hash
             )
+            await self._session.commit()
             return _hash
         except Exception as e:
             await self._session.rollback()

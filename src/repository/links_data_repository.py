@@ -36,6 +36,8 @@ class LinksDataRepository:
 
     async def get_link_by_hash(self, hash: str) -> str | None:
         try:
+            a = await self._session.execute(select(LinksData))
+            logger.debug(f"info: {a.scalars().all()}")
             return (
                 await self._session.execute(
                     select(LinksData.real_link).where(LinksData.hash == hash)

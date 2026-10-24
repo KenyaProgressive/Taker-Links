@@ -10,9 +10,9 @@ from sqlalchemy.types import UUID as SA_UUID
 class Base(DeclarativeBase):
 
     id: Mapped[UUID] = mapped_column(
-        SA_UUID(as_uuid=True), primary_key=True, default=uuid4, init=False
+        SA_UUID(as_uuid=True), primary_key=True, default=uuid4
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True), server_default=func.now(), init=False
+        TIMESTAMP(timezone=True), server_default=func.now()
     )
